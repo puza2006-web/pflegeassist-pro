@@ -757,28 +757,28 @@ async function genDienstplan(){
   document.getElementById('dp-output').style.display='block';
 
   const prompt=`Erstelle einen Dienstplan für ${mName} ${y} (${days} Tage).
-Mitarbeiter (4 Fachkräfte): ${staffList.join(', ')}
+Mitarbeiter (${staffList.length} Fachkräfte): ${staffList.join(', ')}
 Patienten (1:1 AKI): ${patienten}
 Schichtmodell: ${schichtName}
-${wunschText?'Wunschtage: '+wunschText:''}
+${wunschText?'Wunschtage (müssen als W eingetragen werden): '+wunschText:''}
 ${extra?'Sonstiges: '+extra:''}
 
-Regeln:
-- ArbZG: Bei 24h-Schicht mind. 24h Ruhezeit danach
-- §37c SGB V: mind. 50% Fachkräfte jederzeit besetzt
-- Wunschtage müssen als freie Tage (W) eingetragen sein
-- Jeder MA bekommt ca. 8-10 freie Tage/Monat
-- Jeder Patient muss jederzeit versorgt sein (${patienten} Schichten gleichzeitig)
+WICHTIGE REGELN — STRIKT EINHALTEN:
+1. GLEICHE ANZAHL DIENSTE: Jeder Mitarbeiter bekommt exakt gleich viele Dienste. Bei ${days} Tagen und ${staffList.length} Mitarbeitern: Gesamtdienste gleichmäßig aufteilen.
+2. Bei 24h-Schicht: Nach jedem Dienst MINDESTENS 1 freier Tag (ArbZG Ruhezeit).
+3. Wunschtage als "W" eintragen — diese Tage zählen als frei.
+4. Jeder Patient muss jeden Tag versorgt sein — ${patienten} Dienste gleichzeitig aktiv.
+5. Kein Mitarbeiter mehr als 10 Dienste/Monat, kein Mitarbeiter weniger als ${Math.floor(days/staffList.length)-2} Dienste.
+6. §37c SGB V: Immer mindestens 50% Fachkräfte im Dienst.
 
-Antworte NUR mit einem JSON-Objekt in diesem Format (kein Text davor/danach):
+Antworte NUR mit einem JSON-Objekt (kein Text davor/danach, kein Markdown):
 {
-  "mitarbeiter": ["Name1","Name2","Name3","Name4"],
+  "mitarbeiter": ${JSON.stringify(staffList)},
   "tage": ${days},
   "plan": {
-    "Name1": ["24","—","24","—","W","24","—","24","—","—","24","—","24","—","W","24","—","24","—","—","24","—","24","—","W","24","—","24","—","—","24"],
-    "Name2": [...]
+    ${staffList.map(n=>`"${n}": [ARRAY MIT ${days} EINTRÄGEN]`).join(',\n    ')}
   },
-  "zusammenfassung": "Kurze Zusammenfassung auf Deutsch: Schichtverteilung, Wunschtage berücksichtigt, ArbZG-Hinweise."
+  "zusammenfassung": "Zusammenfassung: X Dienste pro Mitarbeiter, Wunschtage berücksichtigt, ArbZG eingehalten."
 }
 Kürzel: 24=24h-Schicht, F=Früh, S=Spät, N=Nacht, W=Wunschfrei, U=Urlaub, —=Frei`;
 
