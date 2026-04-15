@@ -503,7 +503,7 @@ async function callAI(sys,msg,outId){
     const res=await fetch('/api/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6-20251101',max_tokens:1200,system:sys,messages:[{role:'user',content:msg}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:1200,system:sys,messages:[{role:'user',content:msg}]})
     });
     const data=await res.json();
     if(data.error){box.className='ai-out';box.textContent='Fehler: '+data.error.message;return;}
