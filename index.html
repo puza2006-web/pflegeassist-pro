@@ -310,45 +310,98 @@ textarea.fi{resize:vertical;min-height:80px;line-height:1.6}
 </div>
 
 <!-- DIENSTPLAN -->
+<style>
+@media print{.topbar,.nav,.no-print{display:none!important}#page-dienstplan .card:first-child{display:none}.dp-print-table{font-size:10px}body{background:white}}
+.dp-print-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:10px}
+.dp-print-table th{background:#0f2040;color:#fff;padding:5px 3px;text-align:center;font-size:9px;border:1px solid #ccc}
+.dp-print-table td{border:1px solid #ddd;padding:3px 2px;text-align:center;vertical-align:middle;height:22px}
+.dp-print-table .name-col{text-align:left;padding-left:6px;font-weight:700;background:#f8fafc;min-width:80px;font-size:10px}
+.dp-print-table .sum-col{background:#f1f5f9;font-weight:700;font-size:9px}
+.dp-print-table .weekend-col{background:#fafafa}
+.dp-24{background:#dbeafe;color:#1e40af;font-weight:700;font-size:8px;border-radius:2px;padding:1px 2px;display:inline-block}
+.dp-f{background:#dcfce7;color:#166534;font-weight:700;font-size:8px;border-radius:2px;padding:1px 2px;display:inline-block}
+.dp-s{background:#fef3c7;color:#92400e;font-weight:700;font-size:8px;border-radius:2px;padding:1px 2px;display:inline-block}
+.dp-n{background:#f3e8ff;color:#6b21a8;font-weight:700;font-size:8px;border-radius:2px;padding:1px 2px;display:inline-block}
+.dp-w{background:#fff9e6;color:#92400e;font-weight:700;font-size:8px;border-radius:2px;padding:1px 2px;display:inline-block}
+.dp-u{background:#fee2e2;color:#991b1b;font-weight:700;font-size:8px;border-radius:2px;padding:1px 2px;display:inline-block}
+.dp-fr{color:#cbd5e1;font-size:8px}
+.wunsch-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid var(--border);flex-wrap:wrap}
+.wunsch-row:last-child{border-bottom:none}
+.wunsch-name{font-size:13px;font-weight:600;color:var(--text);min-width:120px}
+.wunsch-day{width:42px;border:1px solid var(--border);border-radius:6px;padding:5px 4px;font-size:12px;text-align:center;color:var(--text);background:var(--surface)}
+.wunsch-day:focus{outline:none;border-color:#d97706;background:#fffbeb}
+.wunsch-label{font-size:10px;color:var(--text3);margin-right:2px}
+</style>
 <div id="page-dienstplan" class="page">
-  <div class="alert-box alert-info">ℹ️ <span>Dienstplan nach <strong>ArbZG</strong> und <strong>§37c SGB V</strong> — mindestens 50% Fachkräfte pro Schicht.</span></div>
-  <div class="card">
-    <p class="card-title">Dienstplan-Einstellungen</p>
+  <div class="alert-box alert-info no-print">ℹ️ <span>24h-Schicht (07:00–07:00) · 4 Fachkräfte · ArbZG · §37c SGB V · 3 Wunschtage pro Mitarbeiter</span></div>
+
+  <div class="card no-print">
+    <p class="card-title">Schritt 1 — Grundeinstellungen</p>
     <div class="row3" style="margin-bottom:10px">
-      <div class="fl"><label>Monat</label><input class="fi" type="month" id="dp-monat" value="2025-01"></div>
-      <div class="fl"><label>Anzahl Mitarbeiter</label><input class="fi" type="number" id="dp-anzahl" min="2" max="20" value="6"></div>
-      <div class="fl"><label>Patienten (1:1)</label><input class="fi" type="number" id="dp-patienten" min="1" max="15" value="4"></div>
-    </div>
-    <div class="fl"><label>Mitarbeiternamen (Komma getrennt)</label>
-      <input class="fi" id="dp-namen" value="Anna K., Boris M., Clara S., Denis P., Eva R., Farid T.">
-    </div>
-    <div class="row2" style="margin-bottom:10px">
+      <div class="fl"><label>Monat</label><input class="fi" type="month" id="dp-monat" value="2025-01" onchange="buildWunschFelder()"></div>
+      <div class="fl"><label>Patienten (1:1 AKI)</label><input class="fi" type="number" id="dp-patienten" min="1" max="10" value="4"></div>
       <div class="fl"><label>Schichtmodell</label>
         <select class="fi" id="dp-schicht">
+          <option value="24">24h-Schicht (07:00–07:00)</option>
+          <option value="12">12h-Schichten (Tag/Nacht)</option>
           <option value="3">3-Schicht (F/S/N)</option>
-          <option value="2">2-Schicht (F/N)</option>
-          <option value="12">12h-Schichten</option>
         </select>
       </div>
-      <div class="fl"><label>Besonderheiten</label>
-        <input class="fi" id="dp-extra" placeholder="z.B. Anna Urlaub 10-17. Jan...">
-      </div>
     </div>
+    <div class="fl"><label>4 Fachkräfte — Namen (Komma getrennt)</label>
+      <input class="fi" id="dp-namen" value="Anna K., Boris M., Clara S., Denis P." onchange="buildWunschFelder()">
+    </div>
+    <div class="fl" style="margin-top:8px"><label>Sonstige Hinweise (Urlaub, Sonderwünsche)</label>
+      <input class="fi" id="dp-extra" placeholder="z.B. Anna Urlaub 10–17., Boris nur Tagdienst...">
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <p class="card-title">Schritt 2 — Wunschtage eintragen (max. 3 Tage pro Mitarbeiter)</p>
+    <div id="wunsch-felder">
+      <p style="font-size:12px;color:var(--text3)">Bitte zuerst Namen eingeben und Monat wählen, dann hier Wunschtage eintragen.</p>
+    </div>
+  </div>
+
+  <div class="no-print" style="margin-bottom:16px">
     <button class="btn btn-navy" onclick="genDienstplan()">Dienstplan generieren ↗</button>
   </div>
-  <div id="dp-output" style="display:none" class="card">
-    <div class="out-header">
-      <span class="out-label" id="dp-label">Dienstplan</span>
-      <button class="btn btn-success btn-sm" style="margin-left:auto" onclick="copyOut('dp-box','dp-copied')">📋 Kopieren</button>
-      <span class="copied" id="dp-copied">✓</span>
+
+  <div id="dp-output" style="display:none">
+    <div class="card">
+      <div class="out-header no-print" style="margin-bottom:12px">
+        <span class="out-label" id="dp-label">Dienstplan</span>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+          <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ Drucken / PDF</button>
+          <button class="btn btn-success btn-sm" onclick="copyDP()">📋 Kopieren</button>
+          <span class="copied" id="dp-copied">✓ Kopiert!</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <div id="dp-table-wrap"></div>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;flex-wrap:wrap" class="no-print">
+        <span><span class="dp-24">24</span> 24h-Schicht</span>
+        <span><span class="dp-f">F</span> Früh</span>
+        <span><span class="dp-s">S</span> Spät</span>
+        <span><span class="dp-n">N</span> Nacht</span>
+        <span><span class="dp-w">W</span> Wunschfrei</span>
+        <span><span class="dp-u">U</span> Urlaub</span>
+        <span style="color:var(--text3)">— Frei</span>
+      </div>
+      <div class="mpd-hint no-print" style="margin-top:10px">💡 "Drucken / PDF" für Papierausdruck · "Kopieren" für myPflegedienst</div>
     </div>
-    <div class="ai-out" id="dp-box"></div>
-    <div class="mpd-hint">💡 Text kopieren → myPflegedienst Dienstplan einfügen</div>
+    <div class="card no-print">
+      <p class="card-title">AI Zusammenfassung & Hinweise</p>
+      <div class="ai-out" id="dp-box"></div>
+    </div>
   </div>
-  <div class="card">
+
+  <div class="card no-print">
     <p class="card-title">Dienstplan-Fragen</p>
     <div class="qbtns">
-      <button class="qbtn" onclick="askQ('dp','Maximale Arbeitszeiten nach ArbZG im Nachtdienst?')">ArbZG Nachtdienst</button>
+      <button class="qbtn" onclick="askQ('dp','Was sind die gesetzlichen Regeln für 24h-Schichten nach ArbZG in der Pflege?')">24h-Schicht ArbZG</button>
+      <button class="qbtn" onclick="askQ('dp','Wie viele Ruhezeiten sind nach einer 24h-Schicht vorgeschrieben?')">Ruhezeit nach 24h</button>
       <button class="qbtn" onclick="askQ('dp','Fachkräftequote pro Schicht laut §37c SGB V?')">Fachkräftequote §37c</button>
       <button class="qbtn" onclick="askQ('dp','Konsequenzen bei Unterschreitung der Mindestbesetzung?')">Unterbesetzung</button>
     </div>
@@ -654,7 +707,37 @@ function askQfree(type){
   callAI(sysMap[type],q,boxMap[type]);
 }
 
-function genDienstplan(){
+function buildWunschFelder(){
+  const namen=document.getElementById('dp-namen').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const monat=document.getElementById('dp-monat').value;
+  if(!namen.length||!monat){return;}
+  const [y,m]=monat.split('-');
+  const days=new Date(y,m,0).getDate();
+  const container=document.getElementById('wunsch-felder');
+  container.innerHTML=namen.map((name,i)=>`
+    <div class="wunsch-row">
+      <span class="wunsch-name">${name}</span>
+      <span class="wunsch-label">Wunschtag 1:</span>
+      <input class="wunsch-day" type="number" id="w${i}_1" min="1" max="${days}" placeholder="Tag">
+      <span class="wunsch-label">Tag 2:</span>
+      <input class="wunsch-day" type="number" id="w${i}_2" min="1" max="${days}" placeholder="Tag">
+      <span class="wunsch-label">Tag 3:</span>
+      <input class="wunsch-day" type="number" id="w${i}_3" min="1" max="${days}" placeholder="Tag">
+    </div>`).join('');
+}
+
+function getWunschtage(){
+  const namen=document.getElementById('dp-namen').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const wunsch={};
+  namen.forEach((name,i)=>{
+    const tage=[];
+    for(let j=1;j<=3;j++){const el=document.getElementById(`w${i}_${j}`);if(el&&el.value)tage.push(parseInt(el.value));}
+    if(tage.length)wunsch[name]=tage;
+  });
+  return wunsch;
+}
+
+async function genDienstplan(){
   const monat=document.getElementById('dp-monat').value;
   const patienten=document.getElementById('dp-patienten').value;
   const namen=document.getElementById('dp-namen').value;
@@ -665,10 +748,120 @@ function genDienstplan(){
   const days=new Date(y,m,0).getDate();
   const mNames=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
   const mName=mNames[parseInt(m)-1];
+  const staffList=namen.split(',').map(s=>s.trim()).filter(Boolean);
+  const wunsch=getWunschtage();
+  const wunschText=Object.entries(wunsch).map(([n,t])=>`${n}: Wunschtage ${t.join(', ')}.`).join(' ');
+  const schichtName=schicht==='24'?'24h-Schicht (07:00–07:00 Uhr)':schicht==='12'?'12h-Schichten (Tag 07-19, Nacht 19-07)':'3-Schicht (F 06-14, S 14-22, N 22-06)';
   document.getElementById('dp-label').textContent=`Dienstplan ${mName} ${y}`;
   document.getElementById('dp-output').style.display='block';
-  const schichtName=schicht==='3'?'3-Schicht (F 06-14, S 14-22, N 22-06)':schicht==='2'?'2-Schicht (Tag 07-19, Nacht 19-07)':'12h-Schichten';
-  callAI(SYS_DP,`Dienstplan ${mName} ${y} (${days} Tage). Mitarbeiter: ${namen}. Patienten: ${patienten}. ${schichtName}.${extra?' Besonderheiten: '+extra:''} Regeln: 50% Fachkräfte, ArbZG, ca. 8-10 freie Tage/Monat. Format: Tabelle Mitarbeiter×Tage. Danach Zusammenfassung.`,'dp-box');
+
+  const prompt=`Erstelle einen Dienstplan für ${mName} ${y} (${days} Tage).
+Mitarbeiter (4 Fachkräfte): ${staffList.join(', ')}
+Patienten (1:1 AKI): ${patienten}
+Schichtmodell: ${schichtName}
+${wunschText?'Wunschtage: '+wunschText:''}
+${extra?'Sonstiges: '+extra:''}
+
+Regeln:
+- ArbZG: Bei 24h-Schicht mind. 24h Ruhezeit danach
+- §37c SGB V: mind. 50% Fachkräfte jederzeit besetzt
+- Wunschtage müssen als freie Tage (W) eingetragen sein
+- Jeder MA bekommt ca. 8-10 freie Tage/Monat
+- Jeder Patient muss jederzeit versorgt sein (${patienten} Schichten gleichzeitig)
+
+Antworte NUR mit einem JSON-Objekt in diesem Format (kein Text davor/danach):
+{
+  "mitarbeiter": ["Name1","Name2","Name3","Name4"],
+  "tage": ${days},
+  "plan": {
+    "Name1": ["24","—","24","—","W","24","—","24","—","—","24","—","24","—","W","24","—","24","—","—","24","—","24","—","W","24","—","24","—","—","24"],
+    "Name2": [...]
+  },
+  "zusammenfassung": "Kurze Zusammenfassung auf Deutsch: Schichtverteilung, Wunschtage berücksichtigt, ArbZG-Hinweise."
+}
+Kürzel: 24=24h-Schicht, F=Früh, S=Spät, N=Nacht, W=Wunschfrei, U=Urlaub, —=Frei`;
+
+  const box=document.getElementById('dp-box');
+  const wrap=document.getElementById('dp-table-wrap');
+  wrap.innerHTML='<p style="color:var(--text3);font-size:13px;padding:10px">Dienstplan wird generiert...</p>';
+  box.className='ai-out loading';box.textContent='';
+
+  try{
+    const res=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:2000,system:SYS_DP,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    const txt=data.content?.map(i=>i.text||'').join('')||'';
+    let parsed=null;
+    try{
+      const clean=txt.replace(/```json|```/g,'').trim();
+      parsed=JSON.parse(clean);
+    }catch(e){
+      box.className='ai-out';box.textContent=txt;
+      wrap.innerHTML='<p style="color:var(--danger);font-size:12px">Tabelle konnte nicht erstellt werden. Ergebnis oben im Textfeld.</p>';
+      return;
+    }
+    renderDPTable(parsed,mName,y,staffList);
+    box.className='ai-out';box.textContent=parsed.zusammenfassung||'Dienstplan erstellt.';
+  }catch(e){
+    wrap.innerHTML='<p style="color:var(--danger);font-size:13px">Verbindungsfehler: '+e.message+'</p>';
+    box.className='ai-out';box.textContent='';
+  }
+}
+
+function renderDPTable(data,mName,year,staffList){
+  const wrap=document.getElementById('dp-table-wrap');
+  const days=data.tage||31;
+  const wochentage=['So','Mo','Di','Mi','Do','Fr','Sa'];
+  const monat=document.getElementById('dp-monat').value;
+  const [y,m]=monat.split('-');
+  let th='<tr><th style="text-align:left;padding-left:6px;min-width:90px">Mitarbeiter</th>';
+  for(let d=1;d<=days;d++){
+    const wd=new Date(parseInt(y),parseInt(m)-1,d).getDay();
+    const isWE=wd===0||wd===6;
+    th+=`<th style="${isWE?'background:#334155':''}">${d}<br><span style="font-weight:400;font-size:8px">${wochentage[wd]}</span></th>`;
+  }
+  th+='<th>Σ Dienste</th><th>Σ Frei</th></tr>';
+
+  let rows='';
+  const mitarbeiter=data.mitarbeiter||staffList;
+  mitarbeiter.forEach(ma=>{
+    const plan=data.plan[ma]||[];
+    let dienste=0,frei=0;
+    let cells=plan.slice(0,days).map((s,i)=>{
+      const wd=new Date(parseInt(y),parseInt(m)-1,i+1).getDay();
+      const isWE=wd===0||wd===6;
+      let cls='dp-fr',label=s||'—';
+      if(s==='24'){cls='dp-24';dienste++;}
+      else if(s==='F'){cls='dp-f';dienste++;}
+      else if(s==='S'){cls='dp-s';dienste++;}
+      else if(s==='N'){cls='dp-n';dienste++;}
+      else if(s==='W'){cls='dp-w';frei++;}
+      else if(s==='U'){cls='dp-u';frei++;}
+      else{frei++;}
+      return `<td style="${isWE?'background:#fafafa':''}"><span class="${cls}">${label}</span></td>`;
+    }).join('');
+    while(cells.split('<td').length-1<days)cells+='<td><span class="dp-fr">—</span></td>';
+    rows+=`<tr><td class="name-col">${ma}</td>${cells}<td class="sum-col">${dienste}</td><td class="sum-col">${frei}</td></tr>`;
+  });
+
+  wrap.innerHTML=`<table class="dp-print-table"><thead>${th}</thead><tbody>${rows}</tbody></table>`;
+
+  // Store plain text for copy
+  let txt=`DIENSTPLAN ${mName} ${year}\n\n`;
+  mitarbeiter.forEach(ma=>{
+    const plan=data.plan[ma]||[];
+    txt+=`${ma}: ${plan.join(' | ')}\n`;
+  });
+  document.getElementById('dp-text-copy').value=txt;
+}
+
+function copyDP(){
+  const txt=document.getElementById('dp-text-copy').value;
+  navigator.clipboard.writeText(txt).catch(()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);});
+  const m=document.getElementById('dp-copied');m.style.opacity='1';setTimeout(()=>m.style.opacity='0',2500);
 }
 
 function buildLNTable(){
