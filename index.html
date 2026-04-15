@@ -500,10 +500,10 @@ async function callAI(sys,msg,outId){
   const box=document.getElementById(outId);
   box.className='ai-out loading';box.textContent='Wird generiert';
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('/api/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,system:sys,messages:[{role:'user',content:msg}]})
+      body:JSON.stringify({model:'claude-sonnet-4-6-20251101',max_tokens:1200,system:sys,messages:[{role:'user',content:msg}]})
     });
     const data=await res.json();
     if(data.error){box.className='ai-out';box.textContent='Fehler: '+data.error.message;return;}
