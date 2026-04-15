@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PflegeAssist Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0f2040;--navy2:#1a3260;--accent:#2563eb;--accent-bg:#eff6ff;--accent-mid:#bfdbfe;
+  --success:#16a34a;--success-bg:#f0fdf4;--warn:#d97706;--warn-bg:#fffbeb;
+  --danger:#dc2626;--danger-bg:#fee2e2;--border:#e2e8f0;
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;--surface:#f8fafc;--white:#fff;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--surface);color:var(--text);min-height:100vh}
+
+#login-screen{min-height:100vh;background:linear-gradient(135deg,#0f2040,#1a3260 60%,#1e4080);display:flex;align-items:center;justify-content:center;padding:1rem}
+#app-screen{display:none}
+
+.login-box{background:var(--white);border-radius:16px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.llogo{display:flex;align-items:center;gap:12px;margin-bottom:2rem}
+.licon{width:42px;height:42px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.licon svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2}
+.lprod{font-size:18px;font-weight:700;color:var(--navy)}
+.lsub{font-size:11px;color:var(--text3);margin-top:2px}
+.lf{margin-bottom:14px}
+.lf label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin-bottom:5px}
+.lf input{width:100%;border:1px solid var(--border);border-radius:9px;padding:10px 13px;font-size:14px;color:var(--text);background:var(--surface);transition:border .15s}
+.lf input:focus{outline:none;border-color:var(--accent);background:var(--white)}
+.lbtn{width:100%;padding:11px;background:var(--navy);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+.lbtn:hover{background:var(--navy2)}
+.lbtn:disabled{opacity:.5;cursor:not-allowed}
+.lerr{color:var(--danger);font-size:12px;text-align:center;margin-top:10px;background:var(--danger-bg);border-radius:8px;padding:8px;display:none}
+.linfo{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;line-height:1.5}
+
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:20}
+.ticon{width:30px;height:30px;background:var(--navy);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ticon svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2}
+.tname{font-size:15px;font-weight:700;color:var(--navy)}
+.tfirma{font-size:11px;background:var(--accent-bg);color:var(--accent);padding:3px 9px;border-radius:10px;font-weight:600;border:1px solid var(--accent-mid)}
+.tuser{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2)}
+.av{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.tlout{font-size:11px;color:var(--text3);background:none;border:1px solid var(--border);border-radius:6px;cursor:pointer;padding:4px 9px}
+
+.nav{background:var(--white);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 20px}
+.nav-item{font-size:12px;font-weight:600;padding:10px 16px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px}
+.nav-item.active{color:var(--accent);border-bottom-color:var(--accent)}
+.nav-item:hover:not(.active){color:var(--text);background:var(--surface)}
+
+.main{max-width:900px;margin:0 auto;padding:20px}
+.page{display:none}.page.active{display:block}
+
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:12px}
+.hint{font-size:12px;color:var(--text2);background:var(--surface);border-radius:8px;padding:10px 12px;border-left:3px solid var(--accent-mid);margin-bottom:12px;line-height:1.6}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:600px){.row2,.row3{grid-template-columns:1fr}}
+
+.fi{width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--text);background:var(--surface);font-family:inherit;transition:border .15s}
+.fi:focus{outline:none;border-color:var(--accent);background:var(--white)}
+textarea.fi{resize:vertical;min-height:80px;line-height:1.6}
+.fl label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.fl{margin-bottom:10px}
+
+.btn{padding:9px 18px;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s}
+.btn-navy{background:var(--navy);color:#fff}.btn-navy:hover{background:var(--navy2)}
+.btn-navy:disabled{opacity:.4;cursor:not-allowed}
+.btn-success{background:var(--success-bg);color:var(--success);border:1px solid #86efac}
+.btn-outline{background:var(--white);color:var(--text2);border:1px solid var(--border)}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:7px}
+
+.tag{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600;display:inline-block}
+.tag-red{background:#fee2e2;color:#991b1b}
+.tag-amber{background:#fef3c7;color:#92400e}
+.tag-green{background:#dcfce7;color:#166534}
+.tag-blue{background:#dbeafe;color:#1e40af}
+
+.cl{list-style:none}
+.cl li{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+.cl li:last-child{border-bottom:none}
+.cl input[type=checkbox]{width:15px;height:15px;margin-top:2px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+.cl label{cursor:pointer;line-height:1.5;flex:1}
+.cl input:checked+label{text-decoration:line-through;color:var(--text3)}
+.prog-bar{height:4px;background:var(--border);border-radius:2px;margin:10px 0 4px}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
+.prog-txt{font-size:11px;color:var(--text3)}
+
+.ai-out{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:13.5px;line-height:1.85;color:var(--text);white-space:pre-wrap;border-left:4px solid var(--accent);min-height:80px;margin-top:12px}
+.ai-out.loading{color:var(--text3)}
+.ai-out.loading::after{content:' ▋';animation:blink .7s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+.dsgvo{background:var(--warn-bg);border:1px solid #fcd34d;border-radius:10px;padding:10px 14px;font-size:12px;color:#78350f;display:flex;gap:9px;margin-bottom:16px;line-height:1.6}
+
+.mode-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.mtab{font-size:12px;padding:6px 15px;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;color:var(--text2);background:var(--white);font-weight:600;transition:all .15s}
+.mtab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.mpanel{display:none}.mpanel.active{display:block}
+
+.doc-types{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+@media(max-width:580px){.doc-types{grid-template-columns:repeat(2,1fr)}}
+.dt{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;cursor:pointer;text-align:center;transition:all .15s}
+.dt:hover{border-color:var(--accent-mid);background:var(--accent-bg)}
+.dt.active{border-color:var(--accent);background:var(--accent-bg)}
+.dt-icon{font-size:20px;margin-bottom:5px}
+.dt-lbl{font-size:11px;font-weight:700;color:var(--text);line-height:1.3}
+.dt-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+.qbtns{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.qbtn{font-size:11px;padding:4px 11px;border:1px solid var(--border);border-radius:12px;cursor:pointer;color:var(--text2);background:var(--white)}
+.qbtn:hover{background:var(--accent-bg);border-color:var(--accent-mid);color:var(--accent)}
+
+.out-header{display:flex;align-items:center;margin-bottom:6px;gap:8px}
+.out-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)}
+.copied{font-size:11px;color:var(--success);opacity:0;transition:opacity .3s}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:580px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.stat-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:3px}
+.stat-val{font-size:22px;font-weight:700;color:var(--text)}
+.stat-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.ok{color:var(--success)}.warn{color:var(--warn)}.bad{color:var(--danger)}
+
+.alert-box{padding:10px 14px;border-radius:9px;font-size:12.5px;margin-bottom:12px;line-height:1.6;display:flex;gap:9px}
+.alert-warn{background:var(--warn-bg);border:1px solid #fcd34d;color:#78350f}
+.alert-info{background:var(--accent-bg);border:1px solid var(--accent-mid);color:#1e3a8a}
+
+.sel-tag{font-size:12px;padding:5px 12px;border:1.5px solid var(--border);border-radius:14px;cursor:pointer;color:var(--text2);background:var(--white);transition:all .12s;font-weight:500}
+.sel-tag:hover{background:var(--accent-bg);border-color:var(--accent-mid);color:var(--accent)}
+.sel-tag.selected{background:var(--navy);color:#fff;border-color:var(--navy)}
+.tag-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.tg-group{margin-bottom:12px}
+.tg-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:5px}
+
+.mpd-hint{margin-top:10px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:10px 14px;font-size:12px;color:#0369a1;display:flex;align-items:center;gap:8px}
+
+.ln-table{width:100%;border-collapse:collapse;font-size:12px}
+.ln-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);padding:7px 8px;border-bottom:1px solid var(--border);text-align:left}
+.ln-table td{padding:8px 8px;border-bottom:0.5px solid var(--border);vertical-align:middle}
+.ln-table tr:last-child td{border-bottom:none}
+.ln-input{width:70px;border:1px solid var(--border);border-radius:6px;padding:4px 7px;font-size:12px;text-align:center}
+.ln-input:focus{outline:none;border-color:var(--accent)}
+.diff-ok{color:var(--success);font-weight:700}
+.diff-warn{color:var(--warn);font-weight:700}
+.diff-bad{color:var(--danger);font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="llogo">
+      <div class="licon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+      <div>
+        <div class="lprod">PflegeAssist Pro</div>
+        <div class="lsub">SGB 5 · SGB 11 · MDK · myPflegedienst Assistent</div>
+      </div>
+    </div>
+    <div class="lf"><label>E-Mail</label><input id="iu" type="email" placeholder="ihre@email.de" autocomplete="username"></div>
+    <div class="lf"><label>Passwort</label><input id="ip" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="lbtn" id="login-btn" onclick="doLogin()">Anmelden →</button>
+    <div class="lerr" id="lerr">Falscher Benutzername oder Passwort.</div>
+    <div class="linfo">PflegeAssist Pro · Nur für autorisierte Pflegedienste</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <div class="topbar">
+    <div class="ticon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+    <span class="tname">PflegeAssist Pro</span>
+    <span class="tfirma" id="firma-name">...</span>
+    <div class="tuser">
+      <div class="av" id="user-av">?</div>
+      <span id="user-name">...</span>
+      <button class="tlout" onclick="doLogout()">Abmelden</button>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-item active" onclick="goPage('doku',this)">📄 Dokumentation</div>
+    <div class="nav-item" onclick="goPage('qm',this)">✅ QM-Management</div>
+    <div class="nav-item" onclick="goPage('dienstplan',this)">📅 Dienstplan</div>
+    <div class="nav-item" onclick="goPage('leistung',this)">🔍 Leistungsnachweis</div>
+    <div class="nav-item" onclick="goPage('sgb',this)">⚖️ SGB Fragen</div>
+  </div>
+
+  <div class="main">
+
+<!-- DOKUMENTATION -->
+<div id="page-doku" class="page active">
+  <div class="dsgvo">🔒 <span><strong>Datenschutz:</strong> Keine Patientennamen oder Geburtsdaten eingeben. Generierten Text in myPflegedienst beim jeweiligen Patienten einfügen.</span></div>
+
+  <div class="doc-types">
+    <div class="dt active" onclick="setDT('bericht',this)"><div class="dt-icon">📋</div><div class="dt-lbl">Pflegebericht</div><div class="dt-sub">Täglicher Verlauf</div></div>
+    <div class="dt" onclick="setDT('planung',this)"><div class="dt-icon">📝</div><div class="dt-lbl">Pflegeplanung</div><div class="dt-sub">Individuell · MDK</div></div>
+    <div class="dt" onclick="setDT('anamnese',this)"><div class="dt-icon">🩺</div><div class="dt-lbl">Erstgespräch</div><div class="dt-sub">Anamnese · Aufnahme</div></div>
+    <div class="dt" onclick="setDT('mdk',this)"><div class="dt-icon">📁</div><div class="dt-lbl">MDK-Stellungnahme</div><div class="dt-sub">Antwort auf Mängel</div></div>
+  </div>
+
+  <div class="mode-tabs">
+    <button class="mtab active" onclick="setMode('free',this)">✏️ Freitext</button>
+    <button class="mtab" onclick="setMode('wizard',this)">🧭 Schritt-für-Schritt</button>
+    <button class="mtab" onclick="setMode('liste',this)">☑️ Aus Liste</button>
+  </div>
+
+  <div id="mpanel-free" class="mpanel active">
+    <div class="card">
+      <p class="card-title" id="free-title">Pflegebericht — Situation beschreiben</p>
+      <p class="hint" id="free-hint">Beschreibe kurz den Verlauf heute — ohne Namen. Z.B.: "Beatmung stabil, Patient kooperativ, Vitalzeichen im Normbereich."</p>
+      <textarea class="fi" id="free-input" placeholder="Situation hier beschreiben..." rows="4"></textarea>
+      <button class="btn btn-navy" style="margin-top:10px" onclick="generateFree()">Text generieren ↗</button>
+    </div>
+  </div>
+
+  <div id="mpanel-wizard" class="mpanel">
+    <div class="card" id="wiz-card"></div>
+    <button class="btn btn-navy" onclick="generateWizard()">Text generieren ↗</button>
+  </div>
+
+  <div id="mpanel-liste" class="mpanel">
+    <div class="card">
+      <p class="card-title">Zustand / Probleme auswählen</p>
+      <div id="list-content"></div>
+      <div class="fl" style="margin-top:12px"><label>Ergänzende Angaben</label><input class="fi" id="list-extra" placeholder="z.B. Beatmungsstunden, besondere Vorkommnisse..."></div>
+      <button class="btn btn-navy" onclick="generateList()">Text generieren ↗</button>
+    </div>
+  </div>
+
+  <div id="doku-output" style="display:none">
+    <div class="out-header"><span class="out-label">Fertig für myPflegedienst</span><button class="btn btn-success btn-sm" style="margin-left:auto" onclick="copyOut('doku-box','doku-copied')">📋 Kopieren</button><span class="copied" id="doku-copied">✓ Kopiert!</span></div>
+    <div class="ai-out" id="doku-box"></div>
+    <div class="mpd-hint">💡 myPflegedienst öffnen → Patientenakte → Feld öffnen → <strong>Strg+V</strong></div>
+  </div>
+</div>
+
+<!-- QM -->
+<div id="page-qm" class="page">
+  <div class="stats-row">
+    <div class="stat"><div class="stat-lbl">QM-Stand</div><div class="stat-val ok">B+</div><div class="stat-sub">Letzte Bewertung</div></div>
+    <div class="stat"><div class="stat-lbl">Offene Punkte</div><div class="stat-val warn">4</div><div class="stat-sub">Sofortmaßnahmen</div></div>
+    <div class="stat"><div class="stat-lbl">Audits geplant</div><div class="stat-val">2</div><div class="stat-sub">Dieses Quartal</div></div>
+    <div class="stat"><div class="stat-lbl">Beschwerden</div><div class="stat-val ok">0</div><div class="stat-sub">Letzter Monat</div></div>
+  </div>
+  <div class="card">
+    <p class="card-title">QM-Checkliste AKI — §113 SGB XI + §37c SGB V</p>
+    <ul class="cl" id="cl-qm">
+      <li><input type="checkbox" id="q1" onchange="upProg('qm',12)"><label for="q1">Qualitätsmanagementsystem (QMS) schriftlich dokumentiert und aktuell</label><span class="tag tag-red">Pflicht</span></li>
+      <li><input type="checkbox" id="q2" onchange="upProg('qm',12)"><label for="q2">Interne Audits mindestens 1× jährlich durchgeführt und dokumentiert</label><span class="tag tag-red">Pflicht</span></li>
+      <li><input type="checkbox" id="q3" onchange="upProg('qm',12)"><label for="q3">PDCA-Zyklus in allen Pflegeprozessen implementiert</label><span class="tag tag-red">Pflicht</span></li>
+      <li><input type="checkbox" id="q4" onchange="upProg('qm',12)"><label for="q4">Pflegequalitätsindikatoren (pQ-RL) nach §113 SGB XI erhoben und gemeldet</label><span class="tag tag-red">Pflicht</span></li>
+      <li><input type="checkbox" id="q5" onchange="upProg('qm',12)"><label for="q5">Strukturiertes Beschwerdemanagement vorhanden</label><span class="tag tag-red">Pflicht</span></li>
+      <li><input type="checkbox" id="q6" onchange="upProg('qm',12)"><label for="q6">Hygieneplan aktuell (nach IfSG) inkl. MRE</label><span class="tag tag-red">Pflicht</span></li>
+      <li><input type="checkbox" id="q7" onchange="upProg('qm',12)"><label for="q7">Mitarbeiterschulungen dokumentiert (mind. 1× jährlich)</label><span class="tag tag-amber">Wichtig</span></li>
+      <li><input type="checkbox" id="q8" onchange="upProg('qm',12)"><label for="q8">NBA-Begutachtungsassessment in Pflegeplanung integriert</label><span class="tag tag-amber">Wichtig</span></li>
+      <li><input type="checkbox" id="q9" onchange="upProg('qm',12)"><label for="q9">Risikoassessments: Dekubitus (Braden), Sturz, Mangelernährung, Schmerz</label><span class="tag tag-amber">Wichtig</span></li>
+      <li><input type="checkbox" id="q10" onchange="upProg('qm',12)"><label for="q10">Verfahrensanweisungen (SOPs) für alle Pflegeprozesse vorhanden</label><span class="tag tag-amber">Wichtig</span></li>
+      <li><input type="checkbox" id="q11" onchange="upProg('qm',12)"><label for="q11">Pflegevisiten mindestens 1× monatlich pro Patient dokumentiert</label><span class="tag tag-amber">Wichtig</span></li>
+      <li><input type="checkbox" id="q12" onchange="upProg('qm',12)"><label for="q12">Notruf- und Krisenplan für jeden Patienten individuell erstellt</label><span class="tag tag-amber">Wichtig</span></li>
+    </ul>
+    <div class="prog-bar"><div class="prog-fill" id="prog-qm" style="width:0%"></div></div>
+    <div class="prog-txt" id="prog-qm-t">0 / 12 erledigt</div>
+  </div>
+  <div class="card">
+    <p class="card-title">QM-Dokument generieren</p>
+    <div class="row2" style="margin-bottom:10px">
+      <div class="fl"><label>Dokumententyp</label>
+        <select class="fi" id="qm-dtype">
+          <option>Verfahrensanweisung (SOP)</option>
+          <option>Auditbericht (intern)</option>
+          <option>Schulungsprotokoll</option>
+          <option>Beschwerdebearbeitung</option>
+          <option>Maßnahmenplan nach MDK-Mangel</option>
+          <option>Pflegevisite Protokoll</option>
+        </select>
+      </div>
+      <div class="fl"><label>Thema</label>
+        <select class="fi" id="qm-thema">
+          <option>Beatmungspflege AKI §37c</option>
+          <option>Tracheostomapflege</option>
+          <option>Dekubitusprophylaxe</option>
+          <option>Hygienemanagement</option>
+          <option>Medikamentengabe</option>
+          <option>Notfallmanagement</option>
+          <option>Schmerzmanagement</option>
+        </select>
+      </div>
+    </div>
+    <textarea class="fi" id="qm-extra" rows="2" placeholder="Spezifische Anforderungen (optional)..."></textarea>
+    <button class="btn btn-navy" style="margin-top:10px" onclick="genQM()">Dokument generieren ↗</button>
+  </div>
+  <div class="card">
+    <p class="card-title">QM-Berater — Frage stellen</p>
+    <div class="qbtns">
+      <button class="qbtn" onclick="askQ('qm','Was sind die aktuellen Qualitätsindikatoren nach pQ-RL 2024/2025?')">Qualitätsindikatoren pQ-RL</button>
+      <button class="qbtn" onclick="askQ('qm','Wie führe ich ein internes Audit in der AKI korrekt durch?')">Internes Audit AKI</button>
+      <button class="qbtn" onclick="askQ('qm','Was muss eine SOP für die Beatmungspflege enthalten?')">SOP Beatmungspflege</button>
+      <button class="qbtn" onclick="askQ('qm','Wie implementiere ich NBA in die Pflegeplanung?')">NBA in Pflegeplanung</button>
+    </div>
+    <textarea class="fi" id="q-qm" rows="2" placeholder="Frage zum Qualitätsmanagement..."></textarea>
+    <button class="btn btn-navy" style="margin-top:8px" onclick="askQfree('qm')">Fragen ↗</button>
+    <div id="qm-output" style="display:none;margin-top:10px">
+      <div class="out-header"><span class="out-label">Antwort</span><button class="btn btn-success btn-sm" style="margin-left:auto" onclick="copyOut('qm-box','qm-copied')">📋 Kopieren</button><span class="copied" id="qm-copied">✓</span></div>
+      <div class="ai-out" id="qm-box"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DIENSTPLAN -->
+<div id="page-dienstplan" class="page">
+  <div class="alert-box alert-info">ℹ️ <span>Dienstplan nach <strong>ArbZG</strong> und <strong>§37c SGB V</strong> — mindestens 50% Fachkräfte pro Schicht.</span></div>
+  <div class="card">
+    <p class="card-title">Dienstplan-Einstellungen</p>
+    <div class="row3" style="margin-bottom:10px">
+      <div class="fl"><label>Monat</label><input class="fi" type="month" id="dp-monat" value="2025-01"></div>
+      <div class="fl"><label>Anzahl Mitarbeiter</label><input class="fi" type="number" id="dp-anzahl" min="2" max="20" value="6"></div>
+      <div class="fl"><label>Patienten (1:1)</label><input class="fi" type="number" id="dp-patienten" min="1" max="15" value="4"></div>
+    </div>
+    <div class="fl"><label>Mitarbeiternamen (Komma getrennt)</label>
+      <input class="fi" id="dp-namen" value="Anna K., Boris M., Clara S., Denis P., Eva R., Farid T.">
+    </div>
+    <div class="row2" style="margin-bottom:10px">
+      <div class="fl"><label>Schichtmodell</label>
+        <select class="fi" id="dp-schicht">
+          <option value="3">3-Schicht (F/S/N)</option>
+          <option value="2">2-Schicht (F/N)</option>
+          <option value="12">12h-Schichten</option>
+        </select>
+      </div>
+      <div class="fl"><label>Besonderheiten</label>
+        <input class="fi" id="dp-extra" placeholder="z.B. Anna Urlaub 10-17. Jan...">
+      </div>
+    </div>
+    <button class="btn btn-navy" onclick="genDienstplan()">Dienstplan generieren ↗</button>
+  </div>
+  <div id="dp-output" style="display:none" class="card">
+    <div class="out-header">
+      <span class="out-label" id="dp-label">Dienstplan</span>
+      <button class="btn btn-success btn-sm" style="margin-left:auto" onclick="copyOut('dp-box','dp-copied')">📋 Kopieren</button>
+      <span class="copied" id="dp-copied">✓</span>
+    </div>
+    <div class="ai-out" id="dp-box"></div>
+    <div class="mpd-hint">💡 Text kopieren → myPflegedienst Dienstplan einfügen</div>
+  </div>
+  <div class="card">
+    <p class="card-title">Dienstplan-Fragen</p>
+    <div class="qbtns">
+      <button class="qbtn" onclick="askQ('dp','Maximale Arbeitszeiten nach ArbZG im Nachtdienst?')">ArbZG Nachtdienst</button>
+      <button class="qbtn" onclick="askQ('dp','Fachkräftequote pro Schicht laut §37c SGB V?')">Fachkräftequote §37c</button>
+      <button class="qbtn" onclick="askQ('dp','Konsequenzen bei Unterschreitung der Mindestbesetzung?')">Unterbesetzung</button>
+    </div>
+    <textarea class="fi" id="q-dp" rows="2" placeholder="Frage zum Dienstplan oder Arbeitsrecht..."></textarea>
+    <button class="btn btn-navy" style="margin-top:8px" onclick="askQfree('dp')">Fragen ↗</button>
+    <div id="dp-q-output" style="display:none;margin-top:10px">
+      <div class="ai-out" id="dp-q-box"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LEISTUNGSNACHWEIS -->
+<div id="page-leistung" class="page">
+  <div class="alert-box alert-warn">⚠️ <span>Abgerechnete Leistungen müssen mit Durchführungsnachweisen übereinstimmen. Abweichungen können zu <strong>Rückforderungen</strong> führen.</span></div>
+  <div class="card">
+    <p class="card-title">Leistungsnachweis-Kontrolle — Monatsabschluss</p>
+    <div class="row3" style="margin-bottom:12px">
+      <div class="fl"><label>Monat</label><input class="fi" type="month" id="ln-monat" value="2025-01"></div>
+      <div class="fl"><label>Anzahl Patienten</label><input class="fi" type="number" id="ln-patienten" min="1" max="20" value="4" onchange="buildLNTable()"></div>
+      <div class="fl"><label>Abrechnungssystem</label>
+        <select class="fi" id="ln-system"><option>SGB V + SGB XI</option><option>Nur §37c SGB V</option><option>Nur §36 SGB XI</option></select>
+      </div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="buildLNTable()">Tabelle erstellen</button>
+  </div>
+  <div id="ln-table-card" class="card" style="display:none">
+    <p class="card-title">Soll / Ist — <span id="ln-label">Januar 2025</span></p>
+    <table class="ln-table">
+      <thead><tr><th>Patient</th><th>SGB V Soll (h)</th><th>SGB V Ist (h)</th><th>SGB XI Soll (h)</th><th>SGB XI Ist (h)</th><th>Diff. V</th><th>Diff. XI</th><th>Status</th></tr></thead>
+      <tbody id="ln-tbody"></tbody>
+    </table>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-navy btn-sm" onclick="analyseLN()">AI-Analyse ↗</button>
+      <button class="btn btn-success btn-sm" onclick="copyOut('ln-box','ln-copied')">📋 Protokoll kopieren</button>
+      <span class="copied" id="ln-copied" style="align-self:center">✓</span>
+    </div>
+  </div>
+  <div id="ln-output" style="display:none">
+    <div class="out-header"><span class="out-label">Monatsabschluss-Analyse</span></div>
+    <div class="ai-out" id="ln-box"></div>
+    <div class="mpd-hint">💡 Analyse kopieren → myPflegedienst Monatsabschluss einfügen</div>
+  </div>
+  <div class="card" style="margin-top:4px">
+    <p class="card-title">Pflicht-Checkliste Monatsabschluss</p>
+    <ul class="cl">
+      <li><input type="checkbox" id="la1"><label for="la1">Alle Durchführungsnachweise vollständig und unterschrieben</label><span class="tag tag-red">Pflicht</span></li>
+      <li><input type="checkbox" id="la2"><label for="la2">Leistungsabrechnung mit Dokumentation abgeglichen</label><span class="tag tag-red">Pflicht</span></li>
+      <li><input type="checkbox" id="la3"><label for="la3">Verordnungen §37c gültig — keine abgelaufenen</label><span class="tag tag-red">Pflicht</span></li>
+      <li><input type="checkbox" id="la4"><label for="la4">SGB V und SGB XI nicht doppelt abgerechnet</label><span class="tag tag-red">Pflicht</span></li>
+      <li><input type="checkbox" id="la5"><label for="la5">Krankenkassen-Genehmigungen aktuell geprüft</label><span class="tag tag-amber">Wichtig</span></li>
+      <li><input type="checkbox" id="la6"><label for="la6">Abrechnung fristgerecht übermittelt</label><span class="tag tag-amber">Wichtig</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- SGB FRAGEN -->
+<div id="page-sgb" class="page">
+  <div class="card">
+    <p class="card-title">SGB 5 · SGB 11 · MDK — Direktfrage</p>
+    <div class="qbtns">
+      <button class="qbtn" onclick="askQ('sgb','Können §37c SGB V und §36 SGB XI gleichzeitig abgerechnet werden?')">§37c + §36 kombinieren?</button>
+      <button class="qbtn" onclick="askQ('sgb','Was prüft der MDK bei der AKI konkret?')">MDK Prüfungspunkte</button>
+      <button class="qbtn" onclick="askQ('sgb','Welche Qualifikation brauchen Pflegekräfte laut §37c Abs.3?')">Qualifikation §37c</button>
+      <button class="qbtn" onclick="askQ('sgb','Wie wird Verhinderungspflege §39 SGB XI beantragt?')">Verhinderungspflege</button>
+      <button class="qbtn" onclick="askQ('sgb','Was sind die Unterschiede zwischen AKI §37c und SAPV §37b?')">AKI vs SAPV</button>
+      <button class="qbtn" onclick="askQ('sgb','Wann läuft eine §37c-Verordnung ab und wie wird sie verlängert?')">Verordnung Verlängerung</button>
+      <button class="qbtn" onclick="askQ('sgb','Welche MDK-Mängel führen am häufigsten zu Kürzungen?')">MDK-Mängel & Kürzungen</button>
+    </div>
+    <textarea class="fi" id="q-sgb" rows="3" placeholder="SGB 5, SGB 11, MDK, Abrechnung — Frage stellen..."></textarea>
+    <button class="btn btn-navy" style="margin-top:8px" onclick="askQfree('sgb')">Fragen ↗</button>
+    <div id="sgb-output" style="display:none;margin-top:12px">
+      <div class="out-header"><span class="out-label">Antwort</span><button class="btn btn-success btn-sm" style="margin-left:auto" onclick="copyOut('sgb-box','sgb-copied')">📋 Kopieren</button><span class="copied" id="sgb-copied">✓</span></div>
+      <div class="ai-out" id="sgb-box"></div>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://lneenldqzytvinzktitb.supabase.co';
+const SUPABASE_KEY='sb_publishable_uxyt3JjRIvthecJGoDiAWg_jmHhWvzh';
+let currentUser=null, currentFirma=null;
+
+async function doLogin(){
+  const email=document.getElementById('iu').value.trim();
+  const pass=document.getElementById('ip').value.trim();
+  if(!email||!pass)return;
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true;btn.textContent='Überprüfen...';
+  document.getElementById('lerr').style.display='none';
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/korisnici?email=eq.${encodeURIComponent(email)}&lozinka=eq.${encodeURIComponent(pass)}&select=*,firme(naziv)`,{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    });
+    const data=await res.json();
+    if(data&&data.length>0){
+      currentUser=data[0];
+      currentFirma=data[0].firme;
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('app-screen').style.display='block';
+      document.getElementById('firma-name').textContent=currentFirma?.naziv||'Pflegedienst';
+      document.getElementById('user-name').textContent=currentUser.ime||email;
+      document.getElementById('user-av').textContent=(currentUser.ime||'U')[0].toUpperCase();
+      initWizard();initList();
+    } else {
+      document.getElementById('lerr').style.display='block';
+    }
+  }catch(e){
+    document.getElementById('lerr').textContent='Verbindungsfehler. Bitte erneut versuchen.';
+    document.getElementById('lerr').style.display='block';
+  }
+  btn.disabled=false;btn.textContent='Anmelden →';
+}
+
+document.getElementById('ip').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+function doLogout(){
+  currentUser=null;currentFirma=null;
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('iu').value='';
+  document.getElementById('ip').value='';
+}
+
+function goPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+function upProg(key,total){
+  const pref=key[0];let done=0;
+  for(let i=1;i<=total;i++){const el=document.getElementById(pref+i);if(el&&el.checked)done++;}
+  document.getElementById('prog-'+key).style.width=Math.round(done/total*100)+'%';
+  document.getElementById('prog-'+key+'-t').textContent=done+' / '+total+' erledigt';
+}
+
+const SYS_DOKU=`Du bist ein AI-Assistent für PDL (Pflegedienstleitung) in der außerklinischen Intensivpflege (AKI) nach §37c SGB V. Du erstellst fertige, MDK-konforme Texte die direkt in myPflegedienst eingefügt werden können. Regeln: Kein Patientenname — "der Patient/die Patientin". Datum als [Datum]. Pflegebericht: 4-6 präzise Sätze. Pflegeplanung: Problem→Ziel(SMART)→Maßnahmen→Evaluation. MDK-Stellungnahme: sachlich, mit Fristen. Ende: "→ Einfügen in myPflegedienst: [Feldname]". Deutsch, Fachsprache.`;
+const SYS_QM=`Du bist QM-Experte für ambulante Intensivpflegedienste. Kennst §113 SGB XI, pQ-RL 2024/2025, NBA, PDCA, MDK-Prüfungen. Erstelle vollständige, sofort verwendbare QM-Dokumente. Professionell, präzise, Deutsch.`;
+const SYS_DP=`Du bist Dienstplanexperte für AKI-Pflegedienste. Kennst ArbZG (max 10h/Tag, min 11h Ruhezeit), §37c SGB V (50% Fachkräfte). Erstelle realistische Dienstpläne als Texttabelle. F=Früh S=Spät N=Nacht –=Frei. Markiere ArbZG-Verstöße mit (!). Abschließend: Schichtübersicht und Qualifikationshinweise.`;
+const SYS_LN=`Du bist Abrechnungsexperte für §37c SGB V und SGB XI. Analysiere Leistungsnachweise auf Plausibilität und Abweichungen. Erstelle strukturiertes Monatsabschluss-Protokoll für myPflegedienst. Deutsch, präzise.`;
+const SYS_SGB=`Du bist Experte für SGB V §37c (AKI), SGB XI und MDK-Prüfungen. Beantworte Fragen präzise mit Paragraphenangaben. Max 300 Wörter. Deutsch.`;
+
+async function callAI(sys,msg,outId){
+  const box=document.getElementById(outId);
+  box.className='ai-out loading';box.textContent='Wird generiert';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,system:sys,messages:[{role:'user',content:msg}]})
+    });
+    const data=await res.json();
+    if(data.error){box.className='ai-out';box.textContent='Fehler: '+data.error.message;return;}
+    box.className='ai-out';
+    box.textContent=data.content?.map(i=>i.text||'').join('')||'Keine Antwort.';
+  }catch(e){box.className='ai-out';box.textContent='Verbindungsfehler: '+e.message;}
+}
+
+function copyOut(boxId,msgId){
+  const txt=document.getElementById(boxId).textContent;
+  navigator.clipboard.writeText(txt).catch(()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);});
+  const m=document.getElementById(msgId);m.style.opacity='1';setTimeout(()=>m.style.opacity='0',2500);
+}
+
+const wizCfg={
+  bericht:[
+    {id:'w1',label:'Allgemeinzustand',type:'s',opts:['Stabil, keine Auffälligkeiten','Leichte Verschlechterung','Deutliche Verschlechterung','Verbesserung','Kritisch']},
+    {id:'w2',label:'Beatmung',type:'s',opts:['Invasiv stabil','NIV problemlos','Spontanatmung unter O₂','Weaning aktiv','Parameter angepasst']},
+    {id:'w3',label:'Vitalzeichen',type:'s',opts:['Alle im Normbereich','Blutdruck auffällig','Puls/Rhythmusstörung','SpO₂ erniedrigt','Fieber']},
+    {id:'w4',label:'Pflege / Lagerung',type:'s',opts:['Vollübernahme problemlos','Teilübernahme','Ablehnung bei Pflege','Lagerung 2h durchgeführt','Neue Druckstelle']},
+    {id:'w5',label:'Besonderheiten',type:'i',ph:'Arztbesuch, Familienbesuch, Gerätealarm...'}
+  ],
+  planung:[
+    {id:'w1',label:'Pflegeproblem',type:'s',opts:['Beatmungspflichtig AKI §37c','Schwere Bewusstseinsstörung','Tracheostoma','Vollständige Immobilität','Sondenernährung']},
+    {id:'w2',label:'Risiko',type:'s',opts:['Dekubitusrisiko (Braden ≤14)','Sturzrisiko','Aspirationsrisiko','Infektionsrisiko','Kontrakturrisiko']},
+    {id:'w3',label:'Pflegeziel',type:'s',opts:['Zustandserhalt','Mobilitätsförderung','Schmerzreduktion','Kommunikationsförderung','Wundheilung']},
+    {id:'w4',label:'Maßnahmen',type:'s',opts:['Lagerung 2h + Protokoll','Tracheostomapflege täglich','Beatmungsmonitoring','Physiotherapie täglich','Enterale Ernährung']},
+    {id:'w5',label:'Evaluation',type:'s',opts:['Täglich','Wöchentlich','14-täglich','Bei Zustandsänderung','Monatlich']}
+  ],
+  anamnese:[
+    {id:'w1',label:'Herkunft',type:'s',opts:['Krankenhaus-Entlassung','Von anderem Pflegedienst','Erstversorgung','Reha-Entlassung','Notübernahme']},
+    {id:'w2',label:'Pflegegrad',type:'s',opts:['Pflegegrad 2','Pflegegrad 3','Pflegegrad 4','Pflegegrad 5','Antrag läuft']},
+    {id:'w3',label:'Verordnung §37c',type:'s',opts:['Vorhanden + KK genehmigt','Vorhanden, Genehmigung ausstehend','Noch nicht ausgestellt','§37b SAPV vorhanden']},
+    {id:'w4',label:'Wohnsituation',type:'s',opts:['Alleinlebend','Mit Angehörigen (aktive Hilfe)','Mit Angehörigen (keine Pflege)','Pflegewohngemeinschaft']},
+    {id:'w5',label:'Weitere Infos',type:'i',ph:'Kommunikation, Vorsorgevollmacht...'}
+  ],
+  mdk:[
+    {id:'w1',label:'MDK-Mangel',type:'s',opts:['Pflegeplanung nicht individuell','Dokumentation lückenhaft','Qualifikationsnachweis fehlte','Medikamentendoku unvollständig','Risikoeinschätzung fehlte']},
+    {id:'w2',label:'Ursache',type:'s',opts:['Personalwechsel','Softwarefehler','Schulungsbedarf','Zeitdruck','Erstmalige Situation']},
+    {id:'w3',label:'Maßnahmen',type:'s',opts:['Schulung durchgeführt','Prozess überarbeitet','Checklisten eingeführt','Verantwortlicher benannt','Audits eingeführt']},
+    {id:'w4',label:'Frist',type:'s',opts:['Sofort behoben','Innerhalb 2 Wochen','Innerhalb 4 Wochen','Laufende Verbesserung']},
+    {id:'w5',label:'Nachweise',type:'i',ph:'Schulungsprotokoll vom [Datum], SOP...'}
+  ]
+};
+
+const listCfg={
+  bericht:{'Zustand':['Stabil','Verbessert','Verschlechtert','Kritisch','Agitiert'],'Beatmung':['Stabil','Parameter angepasst','Weaning','Abgesaugt','Tracheostomapflege'],'Pflege':['Vollübernahme','Teilübernahme','Mundpflege','Lagerung 2h','Dekubitus o.B.'],'Events':['Arztbesuch','Familienbesuch','Med. verweigert','Verhaltensänderung','Notfall']},
+  planung:{'Probleme':['Beatmungspflichtig','Dekubitusrisiko','Immobilität','Kommunikationsstörung','Sondenernährung'],'Ziele':['Zustand erhalten','Schmerzkontrolle','Hautintegrität','Infektionsprävention','Lebensqualität'],'Maßnahmen':['2h Lagerung','Tracheostomapflege','Beatmungsmonitoring','Sturzprophylaxe','Ernährungsprotokoll']},
+  anamnese:{'Diagnosen':['AKI beatmungspflichtig','Tracheostoma','Apallisch','Locked-in','Schwere HI'],'Risiken':['Dekubitus','Aspiration','Sturz','Infektion','Kontraktur'],'PG & Verordnung':['PG 3','PG 4','PG 5','§37c genehmigt','PG-Antrag']},
+  mdk:{'Mangel':['Pflegeplanung','Dokumentation','Qualifikation','Medikamente','Risikoeinschätzung'],'Ursache':['Personalwechsel','Software','Schulung','Zeitdruck'],'Maßnahmen':['Schulung','Prozess','Checkliste','Audit','Verantwortlicher']}
+};
+
+const dtNames={bericht:'Pflegebericht',planung:'Pflegeplanung',anamnese:'Erstgespräch/Anamnese',mdk:'MDK-Stellungnahme'};
+const dtHints={
+  bericht:{t:'Pflegebericht',h:'Beschreibe den Verlauf heute ohne Namen. Z.B.: "Beatmung stabil, Patient kooperativ, Vitalzeichen im Normbereich."'},
+  planung:{t:'Pflegeplanung',h:'Beschreibe Pflegeprobleme und Ziele. Z.B.: "Beatmungspflichtig, erhöhtes Dekubitusrisiko."'},
+  anamnese:{t:'Erstgespräch / Anamnese',h:'Beschreibe die Aufnahmesituation. Z.B.: "Übernahme aus KH, Beatmung über Tracheostoma, PG 4."'},
+  mdk:{t:'MDK-Stellungnahme',h:'Beschreibe den MDK-Mangel. Z.B.: "MDK hat beanstandet dass Pflegeplanung nicht aktuell war."'}
+};
+
+let docType='bericht', inputMode='free', selTags={};
+
+function setDT(type,el){
+  docType=type;selTags={};
+  document.querySelectorAll('.dt').forEach(d=>d.classList.remove('active'));el.classList.add('active');
+  initWizard();initList();
+  const h=dtHints[type];
+  document.getElementById('free-title').textContent=h.t;
+  document.getElementById('free-hint').textContent=h.h;
+  document.getElementById('doku-output').style.display='none';
+}
+
+function setMode(mode,el){
+  inputMode=mode;
+  document.querySelectorAll('.mtab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  document.querySelectorAll('.mpanel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('mpanel-'+mode).classList.add('active');
+  document.getElementById('doku-output').style.display='none';
+}
+
+function initWizard(){
+  const fields=wizCfg[docType]||[];
+  document.getElementById('wiz-card').innerHTML='<p class="card-title">Angaben — kein Patientenname nötig</p><div style="display:flex;flex-direction:column;gap:10px">'+
+    fields.map(f=>`<div class="fl"><label>${f.label}</label>${f.type==='s'?`<select class="fi" id="${f.id}"><option value="">— bitte wählen —</option>${f.opts.map(o=>`<option>${o}</option>`).join('')}</select>`:`<input class="fi" id="${f.id}" placeholder="${f.ph||''}">`}</div>`).join('')+'</div>';
+}
+
+function initList(){
+  const cfg=listCfg[docType]||{};selTags={};
+  document.getElementById('list-content').innerHTML=Object.entries(cfg).map(([g,tags])=>`
+    <div class="tg-group"><div class="tg-lbl">${g}</div>
+    <div class="tag-list">${tags.map(t=>`<button class="sel-tag" onclick="togTag('${g}|${t}','${t}',this)">${t}</button>`).join('')}</div></div>`).join('');
+}
+
+function togTag(k,v,el){
+  if(selTags[k]){delete selTags[k];el.classList.remove('selected');}
+  else{selTags[k]=v;el.classList.add('selected');}
+}
+
+function generateFree(){
+  const txt=document.getElementById('free-input').value.trim();
+  if(!txt){alert('Bitte Beschreibung eingeben.');return;}
+  document.getElementById('doku-output').style.display='block';
+  callAI(SYS_DOKU,`Erstelle einen ${dtNames[docType]}: "${txt}". Sofort in myPflegedienst einfügbar.`,'doku-box');
+}
+
+function generateWizard(){
+  const fields=wizCfg[docType]||[];
+  const vals=fields.map(f=>{const e=document.getElementById(f.id);const v=e?e.value.trim():'';return v?`• ${f.label}: ${v}`:'';}).filter(Boolean);
+  if(!vals.length){alert('Bitte mindestens ein Feld ausfüllen.');return;}
+  document.getElementById('doku-output').style.display='block';
+  callAI(SYS_DOKU,`Erstelle einen ${dtNames[docType]}:\n${vals.join('\n')}\nSofort in myPflegedienst einfügbar.`,'doku-box');
+}
+
+function generateList(){
+  const sel=Object.values(selTags);
+  if(!sel.length){alert('Bitte mindestens einen Punkt wählen.');return;}
+  const ex=document.getElementById('list-extra').value.trim();
+  document.getElementById('doku-output').style.display='block';
+  callAI(SYS_DOKU,`Erstelle einen ${dtNames[docType]} mit: ${sel.join(', ')}${ex?' — '+ex:''}. Sofort in myPflegedienst einfügbar.`,'doku-box');
+}
+
+function genQM(){
+  const dtype=document.getElementById('qm-dtype').value;
+  const thema=document.getElementById('qm-thema').value;
+  const extra=document.getElementById('qm-extra').value.trim();
+  document.getElementById('qm-output').style.display='block';
+  callAI(SYS_QM,`Erstelle ein vollständiges ${dtype} für "${thema}" in einem AKI-Pflegedienst.${extra?' Besonderheiten: '+extra:''}`,  'qm-box');
+}
+
+function askQ(type,q){
+  const qMap={qm:'q-qm',dp:'q-dp',sgb:'q-sgb'};
+  const outMap={qm:'qm-output',dp:'dp-q-output',sgb:'sgb-output'};
+  const boxMap={qm:'qm-box',dp:'dp-q-box',sgb:'sgb-box'};
+  const sysMap={qm:SYS_QM,dp:SYS_DP,sgb:SYS_SGB};
+  document.getElementById(qMap[type]).value=q;
+  document.getElementById(outMap[type]).style.display='block';
+  callAI(sysMap[type],q,boxMap[type]);
+}
+
+function askQfree(type){
+  const qMap={qm:'q-qm',dp:'q-dp',sgb:'q-sgb'};
+  const outMap={qm:'qm-output',dp:'dp-q-output',sgb:'sgb-output'};
+  const boxMap={qm:'qm-box',dp:'dp-q-box',sgb:'sgb-box'};
+  const sysMap={qm:SYS_QM,dp:SYS_DP,sgb:SYS_SGB};
+  const q=document.getElementById(qMap[type]).value.trim();
+  if(!q)return;
+  document.getElementById(outMap[type]).style.display='block';
+  callAI(sysMap[type],q,boxMap[type]);
+}
+
+function genDienstplan(){
+  const monat=document.getElementById('dp-monat').value;
+  const patienten=document.getElementById('dp-patienten').value;
+  const namen=document.getElementById('dp-namen').value;
+  const schicht=document.getElementById('dp-schicht').value;
+  const extra=document.getElementById('dp-extra').value.trim();
+  if(!monat||!namen){alert('Bitte Monat und Namen eingeben.');return;}
+  const [y,m]=monat.split('-');
+  const days=new Date(y,m,0).getDate();
+  const mNames=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  const mName=mNames[parseInt(m)-1];
+  document.getElementById('dp-label').textContent=`Dienstplan ${mName} ${y}`;
+  document.getElementById('dp-output').style.display='block';
+  const schichtName=schicht==='3'?'3-Schicht (F 06-14, S 14-22, N 22-06)':schicht==='2'?'2-Schicht (Tag 07-19, Nacht 19-07)':'12h-Schichten';
+  callAI(SYS_DP,`Dienstplan ${mName} ${y} (${days} Tage). Mitarbeiter: ${namen}. Patienten: ${patienten}. ${schichtName}.${extra?' Besonderheiten: '+extra:''} Regeln: 50% Fachkräfte, ArbZG, ca. 8-10 freie Tage/Monat. Format: Tabelle Mitarbeiter×Tage. Danach Zusammenfassung.`,'dp-box');
+}
+
+function buildLNTable(){
+  const n=parseInt(document.getElementById('ln-patienten').value)||4;
+  const monat=document.getElementById('ln-monat').value;
+  const [y,m]=monat.split('-');
+  const mNames=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  document.getElementById('ln-label').textContent=`${mNames[parseInt(m)-1]} ${y}`;
+  document.getElementById('ln-table-card').style.display='block';
+  const tb=document.getElementById('ln-tbody');tb.innerHTML='';
+  for(let i=1;i<=n;i++){
+    tb.innerHTML+=`<tr><td style="font-weight:600">Patient ${i}</td>
+      <td><input class="ln-input" id="vs${i}" type="number" value="480" onchange="calcD(${i})"></td>
+      <td><input class="ln-input" id="vi${i}" type="number" value="480" onchange="calcD(${i})"></td>
+      <td><input class="ln-input" id="xs${i}" type="number" value="60" onchange="calcD(${i})"></td>
+      <td><input class="ln-input" id="xi${i}" type="number" value="60" onchange="calcD(${i})"></td>
+      <td id="dv${i}" class="diff-ok">0</td>
+      <td id="dx${i}" class="diff-ok">0</td>
+      <td id="st${i}"><span class="tag tag-green">OK</span></td></tr>`;
+  }
+}
+
+function calcD(i){
+  const vs=parseFloat(document.getElementById(`vs${i}`).value)||0;
+  const vi=parseFloat(document.getElementById(`vi${i}`).value)||0;
+  const xs=parseFloat(document.getElementById(`xs${i}`).value)||0;
+  const xi=parseFloat(document.getElementById(`xi${i}`).value)||0;
+  const dv=vi-vs,dx=xi-xs;
+  const dvc=document.getElementById(`dv${i}`),dxc=document.getElementById(`dx${i}`);
+  dvc.textContent=(dv>0?'+':'')+dv+'h';dxc.textContent=(dx>0?'+':'')+dx+'h';
+  const vc=Math.abs(dv)<5?'diff-ok':Math.abs(dv)<20?'diff-warn':'diff-bad';
+  const xc=Math.abs(dx)<2?'diff-ok':Math.abs(dx)<10?'diff-warn':'diff-bad';
+  dvc.className=vc;dxc.className=xc;
+  const bad=vc==='diff-bad'||xc==='diff-bad',warn=vc==='diff-warn'||xc==='diff-warn';
+  document.getElementById(`st${i}`).innerHTML=bad?'<span class="tag tag-red">Prüfen!</span>':warn?'<span class="tag tag-amber">Abweichung</span>':'<span class="tag tag-green">OK</span>';
+}
+
+function analyseLN(){
+  const n=parseInt(document.getElementById('ln-patienten').value)||4;
+  const monat=document.getElementById('ln-monat').value;
+  const system=document.getElementById('ln-system').value;
+  let daten=[];
+  for(let i=1;i<=n;i++){
+    const vs=document.getElementById(`vs${i}`)?.value||0;
+    const vi=document.getElementById(`vi${i}`)?.value||0;
+    const xs=document.getElementById(`xs${i}`)?.value||0;
+    const xi=document.getElementById(`xi${i}`)?.value||0;
+    daten.push(`Patient ${i}: SGB V Soll=${vs}h Ist=${vi}h | SGB XI Soll=${xs}h Ist=${xi}h`);
+  }
+  document.getElementById('ln-output').style.display='block';
+  callAI(SYS_LN,`Analysiere Leistungsnachweis ${monat} (${system}):\n${daten.join('\n')}\nErstelle Monatsabschluss-Protokoll für myPflegedienst.`,'ln-box');
+}
+</script>
+</body>
+</html>
